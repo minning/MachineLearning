@@ -35,49 +35,51 @@ def sigmoid(XMat):
     return 1.0 / (1 + np.exp(-1.0 * XMat))
 
 
-def graDsent(dataArray, lableArray, learning_rate=0.07, maxCycle=10):
+def graDsent(dataArray, lableArray, learning_rate=0.05, maxCycle=20):
     dataMat = np.mat(dataArray)  # (301, 1024)
     lableMat = np.mat(lableArray)  # (301, 1)
     para = np.ones((dataMat.shape[1], 1))  # (1024, 1)
 
     for i in range(maxCycle):
-        f_x = dataMat * para
+        f_x = sigmoid(dataMat * para)
         error = lableMat - f_x
         para = para + learning_rate * dataMat.transpose() * error
 
-    print "para"
-    print para
     return para
 
 
 def classify(dataArray, lableArray, para):
     dataMat = np.mat(dataArray)  # (80, 1024)
     lableMat = np.mat(lableArray)  # (80, 1)
-    print lableMat[0,0]
     preMat = dataMat * para
     preLable = sigmoid(preMat)
 
     i = 0
     for index, preOneLable in enumerate(preLable):
         preOneLableItem = preOneLable[0]
-        print (preOneLable), lableMat[index, 0]
-        if round(preOneLableItem) == int(lableMat[index][0]):
-            i += 1
+        if preOneLableItem > 0.5:
+            print "{} is predict to 1".format(lableMat[index, 0])
+            if int(lableMat[index, 0]) != 1:
+                i += 1
+        else:
+            print "{} is predict to 0".format(lableMat[index, 0])
+            if int(lableMat[index, 0]) != 0:
+                i += 1
 
-    return i * 1.0 / lableMat.shape[0]
+    return 1.0 * i / lableMat.shape[0]
 
 
 def main():
     dataArray, lableArray = loadData('train')
     testData, testLable = loadData('test')
-    print "dataArray shape : {}".format(dataArray.shape)
-    print "lableArray shape : {}".format(lableArray.shape)
-    print "testData shape : {}".format(testData.shape)
-    print "testLable shape : {}".format(testLable.shape)
+    # print "dataArray shape : {}".format(dataArray.shape)
+    # print "lableArray shape : {}".format(lableArray.shape)
+    # print "testData shape : {}".format(testData.shape)
+    # print "testLable shape : {}".format(testLable.shape)
     para = graDsent(dataArray, lableArray)
 
     result = classify(testData, testLable, para)
-    print result
+    print "The error rate is {}".format(result)
 
 
 if __name__ == "__main__":
